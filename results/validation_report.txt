@@ -1,0 +1,25 @@
+Multi-RIS 3D adapted to the single-frame two-user scenario, with oracle support and a truth-centered coarse search region.
+Created: 2026-09-18 17:42:43 *
+MATLAB: 9.12.0.1884302 (R2022a)
+
+A structural pass: 1
+A candidates valid/total: 1331/1331
+A coarse errors UE1/UE2/joint: 0 1.11022302463e-15 1.11022302463e-15
+A refined errors UE1/UE2/joint: 0 1.11022302463e-15 1.11022302463e-15
+A Jacobian angle/delay max abs: 1.63277724674e-12 1.55281032925e-19
+
+B structural pass: 1
+B reconstruction relative residual: 7.42947291793e-09
+B refined errors UE1/UE2/joint: 0 8.70728331854e-09 8.70728331854e-09
+
+C shared randomness verified: 1
+C seed=20260918 SNR=0 category=3_finite_normal_return_error_recorded valid=1331 errors=0.107964693272/0.070419647268/0.128900355758 exit=1 elapsed=0.590546 exception=
+C seed=20260919 SNR=0 category=3_finite_normal_return_error_recorded valid=1331 errors=0.0976401953284/0.098514838768/0.138703933619 exit=1 elapsed=0.548221 exception=
+C seed=20260920 SNR=0 category=3_finite_normal_return_error_recorded valid=1331 errors=0.13515825013/0.195612723032/0.2377647787 exit=1 elapsed=0.522684 exception=
+C seed=20260921 SNR=0 category=3_finite_normal_return_error_recorded valid=1331 errors=0.120458053794/0.191024107174/0.225832575696 exit=1 elapsed=0.541337 exception=
+C seed=20260922 SNR=0 category=3_finite_normal_return_error_recorded valid=1331 errors=0.0940154941775/0.156934826255/0.182941118498 exit=1 elapsed=0.487914 exception=
+C seed=20260918 SNR=30 category=3_finite_normal_return_error_recorded valid=1331 errors=0.00317769048448/0.00207442318213/0.00379485814671 exit=1 elapsed=0.490359 exception=
+C seed=20260919 SNR=30 category=3_finite_normal_return_error_recorded valid=1331 errors=0.0030330319505/0.0030552965248/0.00430512713717 exit=1 elapsed=0.489128 exception=
+C seed=20260920 SNR=30 category=3_finite_normal_return_error_recorded valid=1331 errors=0.00414794556514/0.00592275174304/0.00723079806252 exit=1 elapsed=0.478651 exception=
+C seed=20260921 SNR=30 category=3_finite_normal_return_error_recorded valid=1331 errors=0.00381236331781/0.00610555594132/0.00719805025126 exit=1 elapsed=0.487424 exception=
+C seed=20260922 SNR=30 category=3_finite_normal_return_error_recorded valid=1331 errors=0.00299211848231/0.00501911548448/0.00584331183994 exit=1 elapsed=0.491905 exception=
