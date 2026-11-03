@@ -16,7 +16,7 @@ result = infer_baseline1_frame_projection_assisted( ...
 - `separatedNoiseVariance`：原分离噪声方差；原信道接口保留该标量。
 - `baseReflections`：RIS 元素 × 基础反射配置 × RIS。
 - `cfg`：原配置结构；包含 `ris`、`ofdm`、`constants`、RIS 中心/局部轴/法向，以及 `paperBaselineA.oracleSupport/lowerBound/upperBound/gridStep`。当前实现仍要求 `geometry.static_user/mobile_user` 字段存在，以便移除后向初始化计算传递无用户真值的几何结构；不使用其值选候选。
-- 可选 `channel`：原 `estimate_channel_parameters` 输出。调用方负责保证它来自同一观测、支持集合和配置；接口没有重新核验此关联。
+- 可选 `channel`：原 `estimate_channel_parameters` 输出。接口检查标量结构、必要字段、支持集合及其顺序、向量长度、有限实数及可选噪声方差匹配；这些结构检查不证明观测同源性，仍由调用方保证，不重新执行MLE。
 
 与原 `experiment/run_paper_baseline_A.m` 相同的主要字段为 `staticPositionEstimate`、`mobilePositionEstimate`、`activeRisIndices`、`searchInfo`、`channel`、`coarse`、`refined`、`label`。新增：
 
@@ -41,10 +41,10 @@ result = infer_baseline1_frame_projection_assisted( ...
 2. 从原 `cfg.paperBaselineA` 提取支持和 Tx 搜索条件，调用原 `estimate_position_coarse` 一次。只捕获完整标识 `estimate_position_coarse:NoValidCandidate`，其他异常原样抛出。
 3. **正常路径**：原几何初值 → 原 `refine_position_mle_eq57_identity` 一次 → 独立复核原目标/最近RIS距离 → 附加质量和时序。原估计位置及 `refined` 不变，无投影或额外精修。
 4. **回退路径**：`b1_pai_grid` 根据原边界/步长生成网格，当前验证配置为1331点，未将1331写死。逐 Tx 网格、逐 active RIS 减去 Tx 方向的面内分量，对越界二维向量除以其模长；可行向量原值保留。正法向分量为 `sqrt(max(0,1-sum(ab.^2)))`，无内缩或法向裕量。
-5. 使用配置局部轴/法向、原 unordered RIS pair、`[uI,-uJ] \\ (rj-ri)`、line-i 最近点、多 pair 位置等权融合。秩不足、非有限或原残差不可计算时不纳入初值；负射线参数和高条件数仅诊断，不新增约束。
+5. 使用配置局部轴/法向、原 unordered RIS pair、`[uI,-uJ] \\ (rj-ri)`、line-i 最近点、多 pair 位置等权融合。Tx网格与任一有效RIS中心完全重合时跳过并标记`txAtRisCenter`，不增加非零距离阈值。秩只计算一次并复用原`<2`判定。秩不足、非有限或原残差不可计算时不纳入初值；负射线参数和高条件数仅诊断，不新增约束。
 6. 每个可计算初值评价原完整目标，按目标、网格索引、RIS索引升序。六维欧氏距离 `<=1e-6 m` 去重，最多保留8个初值。没有使用真实误差、历史 Trial 编号、测试种子、Proposed 或 B2 输出。
 7. 每个保留初值调用同一个原位置精修函数。目标仍是每RIS的 ξ、ζ 与以秒计的 τ 残差平方和，单位权重、无先验/Fisher正则；原 trust-region-reflective 参数不变（500次迭代、5000函数评价、Function/StepTolerance=1e-12、OptimalityTolerance=1e-10）。
-8. 独立复核初/终原目标。仅有限实数位置且完整目标有限的候选有资格；原目标最小者胜出，精确平局保留较早候选。exitflag/一阶指标/质量标签都不用于选择。
+8. 独立复核初/终原目标。在一致性断言前检查六维位置、优化器及独立初/终目标的有限实数性；非有限候选原值保留、标为无效并继续。有限目标真实不一致仍抛原`fallback:*ObjectiveMismatch`。仅对3个明确的候选数值异常标识记录后继续，其他错误原样抛出；详见修复报告。原目标最小者胜出，精确平局保留较早候选。exitflag/一阶指标/质量标签都不用于选择。
 9. 逐原因标记非正或非有限exitflag、一阶指标非有限/>1e-6、距有效RIS中心<=1e-6m、目标增加>1e-10*max(1,J0)、非有限位置/目标；严格一阶标志为<=1e-10。`firstOrderOptimality` 是原求解器 `output.firstorderopt`，不是保存的完整梯度向量。
 
 ## 3. 依赖和开销审查
@@ -65,7 +65,7 @@ result = infer_baseline1_frame_projection_assisted( ...
 | 重复原粗定位 | 每次接口1次；回退是在失败后另做投影网格扫描，不重复调用原粗定位 |
 | 目标求值 | 正常路径在原精修后复核终点目标；回退对全部可计算网格初值求原目标，8个精修内部再次评价，返回后再复核。部分计算重复，但复核服务于排序/一致性诊断，未删除 |
 | 相同初值 | 前8个按1e-6m六维距离去重，不重复完全相同初值；未强制起点大范围分散，不同初值仍可收敛到同一终点 |
-| 矩阵开销 | 主要是原信道二维搜索、1331网格及最多8次精修；pair矩阵仅3×2。投影 helper 对一个 pair 重复调用 `rank(A)` 两次，`cond(A'*A)` 和逐网格诊断可产生额外开销；未发现新增的大型稠密矩阵求逆 |
+| 矩阵开销 | 主要是原信道二维搜索、1331网格及最多8次精修；pair矩阵仅3×2。重复`rank(A)`已消除；`cond(A'*A)`和逐网格诊断保留，未发现新增的大型稠密矩阵求逆 |
 | 磁盘 | 推断接口和 private helper 无 load/save/fopen 或其他磁盘读写；checkpoint 属于外层验证程序，未随本分支发布 |
 
 ## 4. 已有验证与对应配置
@@ -83,20 +83,20 @@ result = infer_baseline1_frame_projection_assisted( ...
 ## 5. 进一步审查项（本轮不修复）
 
 1. 返回契约：无可用回退候选返回NaN及空`refined`；未来调用方必须适配，不能沿用无条件访问`refined.exitflag`的写法。其他原异常仍会抛出，需要实验层独立捕获。
-2. 非有限精修结果：candidate 的目标一致性 `assert` 位于无效结果筛除之前，非有限目标可能触发 `fallback:*ObjectiveMismatch` 并重新抛出，使整次推断中断；现有验证没有触发该分支，不能称已验证所有异常处理。
-3. 可选外部MLE缺少关联检查：第5参数必须由调用方保证与当前观测/配置/support一致。`geometry.static_user/mobile_user` 字段虽不用于选择，但现有 `rmfield` 要求字段存在。
+2. 非有限精修结果导致断言中断的问题已修复并经隔离替身验证；有限目标不一致、维度或未知程序错误仍故意立即抛出。数值异常白名单保守，不按错误消息猜测未知错误可恢复。
+3. 可选外部MLE的明显结构错误已检查，但不能证明其与观测严格同源。`geometry.static_user/mobile_user` 字段虽不用于选择，现有配置契约仍要求字段存在。
 4. 圆盘边界产生切向方向；负射线和近RIS中心结果未被过滤。这与已验证规则一致，任何修改都须另行验证，不能在本次发布中悄悄调整。
 5. 原秒单位无权重时延项很弱，原目标最低和正exitflag都不保证真实定位准确。原始/PAI的有限分母、质量和固定误差门限成功率必须分别报告。
 
 ## 6. 源码身份
 
-基准仓库提交：`431338bf92312c89eb76787adfffb44ceffbcd74`。下列 SHA-256 为验证工作文件的原始字节哈希。本次新增源码按原始字节暂存，以便与验证版本核对；既有依赖的换行可能受Git checkout设置影响，已经另外核对其规范化文本与基准提交一致。
+原B1基准提交：`431338bf92312c89eb76787adfffb44ceffbcd74`；初版B1-PAI验证/审查提交：`fe8253e8f9885af896cf7c037b2fc86427194c14`。本次最小工程修复只涉及入口和2个private helper，262例逐候选回归及23项边界测试通过，详见[工程修复报告](BASELINE1_PAI_HARDENING_REPORT.md)。下表为当前工作文件原始字节SHA-256，修复前后对照见报告。既有依赖未修改，换行字节可能受Git checkout设置影响。
 
 | 文件（相对仓库根） | 验证 SHA-256 |
 | --- | --- |
-| `src/baselines/multiris3d/infer_baseline1_frame_projection_assisted.m` | `084040ad2c79683ef6eddf520547212e9770489d881629e4c8b966ac92831411` |
-| `src/baselines/multiris3d/private/b1_pai_build_initializations.m` | `42a9fe1467726217693ce0398c1b7f9747b4efd0f4bfe13a37a7a53c7329bfc9` |
-| `src/baselines/multiris3d/private/b1_pai_evaluate_candidates.m` | `dd0d43b38f99e9db21bf9919b73ec5032c1c1701a98f4cf912970fa9e0364178` |
+| `src/baselines/multiris3d/infer_baseline1_frame_projection_assisted.m` | `06fe32fc43d79c3f4ca4192e529b1a8695e7ef58932333fbeac582ae8bf107bc` |
+| `src/baselines/multiris3d/private/b1_pai_build_initializations.m` | `0ecd2beed33a834ee6b147fc28a84f11578322209d63d988b896655ab474d34a` |
+| `src/baselines/multiris3d/private/b1_pai_evaluate_candidates.m` | `33011bf5378125df4622850b22f84c1079d97c4e8c231bce197276fb041020c0` |
 | `src/baselines/multiris3d/private/b1_pai_grid.m` | `ac834e9e55b0d4f534c1a8eb81931732f0a84e291ff5d987f4b292431001e3b7` |
 | `src/baselines/multiris3d/private/b1_pai_objective.m` | `a6771bc801807c46e5949cfa8ada9c7cc082b8ace3c089dd39057a5fd73f1785` |
 | `src/baselines/multiris3d/private/b1_pai_rank_initializations.m` | `898a71683cb93357c0fb2a86d98a5a9d9a6fe655a43b741da624df36bc6c0c16` |

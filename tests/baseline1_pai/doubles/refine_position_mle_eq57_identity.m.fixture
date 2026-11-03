@@ -1,0 +1,25 @@
+function result=refine_position_mle_eq57_identity(delay,xi,zeta,active,tx,rx,cfg)
+state=pai_hardening_stub_state('increment','refineCalls');
+if strcmp(state.mode,'dimensionError'),error('MATLAB:dimagree','Injected program error.');end
+if strcmp(state.mode,'unknownError'),error('paiTest:UnknownProgramError','Injected unknown program error.');end
+if strcmp(state.mode,'numericException') && state.refineCalls==1,error('refine_position_mle_eq57_identity:PositionAtRisCenter','Injected candidate numerical error.');end
+ch=struct('delayEstimate',delay,'xiEstimate',xi,'zetaEstimate',zeta,'activeRisIndices',active);
+cost=b1_pai_objective([tx;rx],ch,cfg.geometry,cfg.constants.c);
+result=struct('staticPositionEstimate',tx,'mobilePositionEstimate',rx,'initialCost',cost,'finalCost',cost,'exitflag',1,'iterations',1,'funcCount',1,'firstOrderOptimality',0);
+switch state.mode
+    case 'singleNonfinite'
+        if state.refineCalls==1,result.staticPositionEstimate(:)=nan;result.finalCost=nan;end
+    case 'singleInfObjective'
+        if state.refineCalls==1,result.finalCost=inf;end
+    case 'nonfiniteInitial'
+        if state.refineCalls==1,result.initialCost=inf;end
+    case 'allNonfinite'
+        result.staticPositionEstimate(:)=nan;result.finalCost=nan;
+    case 'initialMismatch'
+        result.initialCost=cost+1;
+    case 'finalMismatch'
+        result.finalCost=cost+1;
+    case 'finiteNotConverged'
+        result.exitflag=0;result.firstOrderOptimality=1;
+end
+end

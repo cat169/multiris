@@ -1,0 +1,8 @@
+function coarse=estimate_position_coarse(varargin)
+state=pai_hardening_stub_state('increment','coarseCalls');
+if strcmp(state.mode,'normal')
+    coarse=struct('staticPositionEstimate',[1;0;0],'mobilePositionEstimate',[2;1;1],'bestGridIndex',1);
+else
+    error('estimate_position_coarse:NoValidCandidate','Isolated test: force projection fallback.');
+end
+end

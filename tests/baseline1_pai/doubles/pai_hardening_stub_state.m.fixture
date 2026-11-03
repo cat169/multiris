@@ -1,0 +1,10 @@
+function state=pai_hardening_stub_state(action,value)
+persistent saved
+switch action
+    case 'configure'
+        saved=struct('mode',value.mode,'channel',value.channel,'refineCalls',0,'coarseCalls',0,'channelCalls',0);
+    case 'increment'
+        saved.(value)=saved.(value)+1;
+end
+state=saved;
+end

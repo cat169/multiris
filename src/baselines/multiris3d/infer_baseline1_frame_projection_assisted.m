@@ -9,6 +9,7 @@ if nargin<5 || isempty(channel)
     channel=estimate_channel_parameters(YSeparated,separatedNoiseVariance,baseReflections,cfg.paperBaselineA.oracleSupport(:),cfg);
     channelReused=false;
 else
+    validate_external_channel(channel,cfg.paperBaselineA.oracleSupport,separatedNoiseVariance);
     channelReused=true;
 end
 channelSeconds=toc(channelTimer); active=cfg.paperBaselineA.oracleSupport(:);
@@ -51,4 +52,25 @@ result.timing=struct('channelSeconds',channelSeconds,'originalCoarseSeconds',coa
 end
 function reasons=quality_reasons(q)
 reasons=struct('nonpositiveExitflag',~isfinite(q.exitflag)||q.exitflag<=0,'nonfiniteFirstOrder',~isfinite(q.firstOrderOptimality),'largeFirstOrder',isfinite(q.firstOrderOptimality)&&q.firstOrderOptimality>1e-6,'nearRisCenter',isfinite(q.minimumRisDistance)&&q.minimumRisDistance<=1e-6,'objectiveIncrease',isfinite(q.finalObjective)&&q.finalObjective>q.initialObjective+1e-10*max(1,q.initialObjective),'nonfinitePosition',~isreal(q.estimate)||any(~isfinite(q.estimate)),'nonfiniteObjective',~isreal(q.finalObjective)||~isfinite(q.finalObjective));
+end
+function validate_external_channel(channel,support,noiseVariance)
+% Structural consistency only; the caller guarantees observation provenance.
+required={'activeRisIndices','delayEstimate','xiEstimate','zetaEstimate'};
+assert(isstruct(channel)&&isscalar(channel)&&all(isfield(channel,required)), ...
+    'baseline1PAI:InvalidExternalChannel','External channel must be a scalar structure with the required MLE fields.');
+active=channel.activeRisIndices;
+assert(isnumeric(active)&&isvector(active)&&isreal(active)&&all(isfinite(active(:)))&&isequal(active(:),support(:)), ...
+    'baseline1PAI:ExternalSupportMismatch','External MLE support must match oracleSupport, including order.');
+for k=2:numel(required)
+    value=channel.(required{k});
+    assert(isnumeric(value)&&isvector(value)&&numel(value)==numel(support), ...
+        'baseline1PAI:ExternalChannelSize','Each external MLE estimate must be a vector with one entry per active RIS.');
+    assert(isreal(value)&&all(isfinite(value(:))), ...
+        'baseline1PAI:ExternalChannelNonfinite','External delay and spatial frequency estimates must be finite real values.');
+end
+if isfield(channel,'separatedNoiseVariance')
+    value=channel.separatedNoiseVariance;
+    assert(isnumeric(value)&&isscalar(value)&&isreal(value)&&isfinite(value)&&isequal(value,noiseVariance), ...
+        'baseline1PAI:ExternalNoiseMismatch','External MLE noise variance must match the current input.');
+end
 end

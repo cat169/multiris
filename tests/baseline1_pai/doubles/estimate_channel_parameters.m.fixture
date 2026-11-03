@@ -1,0 +1,3 @@
+function channel=estimate_channel_parameters(varargin)
+state=pai_hardening_stub_state('increment','channelCalls'); channel=state.channel;
+end
