@@ -1,0 +1,78 @@
+[
+  {
+    "path": "src/baselines/multiris3d/estimate_channel_parameters.m",
+    "sha256": "f0138a6e8b0beda21b11eb543dfc03538cc2475d7e76fc04056e2eb9a524eed8"
+  },
+  {
+    "path": "src/baselines/multiris3d/estimate_delay_coarse.m",
+    "sha256": "ff6736e1e120e3b47e9416c8533ec5ea94c9922a1ab3b9e532c8101113e3a1ea"
+  },
+  {
+    "path": "src/baselines/multiris3d/estimate_position_coarse.m",
+    "sha256": "6dc7ce4b12c96bea1b8f7916d7d3cb6cfbdd4e3de01caea90f88d0c78d99732b"
+  },
+  {
+    "path": "src/baselines/multiris3d/estimate_spatial_coarse.m",
+    "sha256": "2a909bf9373fb022e55ce3d7c235935887cf9429f4f406c6aec1512da7c762b7"
+  },
+  {
+    "path": "src/baselines/multiris3d/infer_baseline1_frame_projection_assisted.m",
+    "sha256": "06fe32fc43d79c3f4ca4192e529b1a8695e7ef58932333fbeac582ae8bf107bc"
+  },
+  {
+    "path": "src/baselines/multiris3d/refine_channel_mle.m",
+    "sha256": "3552721258895c75d9ee953e04f5544633d1516b1ef6acd3f3423ac5a046df08"
+  },
+  {
+    "path": "src/baselines/multiris3d/refine_position_mle_eq57_identity.m",
+    "sha256": "60cdf333707feb82598daf8cf685f7ce4be2f65153f0abc0498e34d095513b62"
+  },
+  {
+    "path": "src/baselines/multiris3d/private/b1_pai_build_initializations.m",
+    "sha256": "8749e08097f7fa2c7c6dafc8d2b62b7ae084083c2bfb616e97df46947c1fe7ee"
+  },
+  {
+    "path": "src/baselines/multiris3d/private/b1_pai_evaluate_candidates.m",
+    "sha256": "97627af9decc136ead642e94b6c79b5490390139403b8dfd580477564e5c7b75"
+  },
+  {
+    "path": "src/baselines/multiris3d/private/b1_pai_grid.m",
+    "sha256": "b719675ac7c4d7397b20d996b7152605fbe1e664b57b60b70f80c61c9009ca8c"
+  },
+  {
+    "path": "src/baselines/multiris3d/private/b1_pai_objective.m",
+    "sha256": "d55c7684a44cebbc232a98d7f9e9887e24632fb9e662de4d8a6b4d5106bd97af"
+  },
+  {
+    "path": "src/baselines/multiris3d/private/b1_pai_rank_initializations.m",
+    "sha256": "5449534494ff6fc2778bed09025b8069c1e8eda4fad5f8225fd3d26c135774f1"
+  },
+  {
+    "path": "baseline2/inference/compute_channel_fim.m",
+    "sha256": "9262670d5461c1a1ef65814ee5cddfe8a5de38ff2f03cda69f87ad7accef761d"
+  },
+  {
+    "path": "baseline2/inference/infer_baseline2_frame.m",
+    "sha256": "d633c120f645bfb05c48f63f7b71c11468f5b47f3c60c20185d94d546a7f3379"
+  },
+  {
+    "path": "baseline2/inference/infer_baseline2_frame_s4.m",
+    "sha256": "95dc091a91cd67e8fb5b8d8df64fe1b4aadab3646392b9290d64f066ece00fc6"
+  },
+  {
+    "path": "baseline2/inference/refine_position_map.m",
+    "sha256": "b5fb54fd390195cd9587762368ba318518a12d9cc9e2662465b66c0830c0c246"
+  },
+  {
+    "path": "baseline2/inference/private/b2_s4_original_sr.m",
+    "sha256": "20c5420027ebbc20285cfe241d0d12ea8ff0c1419ff72f54ad328f1b6c28c96f"
+  },
+  {
+    "path": "baseline2/inference/private/b2_s4_residual.m",
+    "sha256": "91175b6b61ca126b81912fe2531457d36a4e8cf9dc648d2dd5d4d31347cdb156"
+  },
+  {
+    "path": "baseline2/inference/private/b2_s4_try_map.m",
+    "sha256": "e99459ae9ccb7c13b872a78debe2b0d8a91051c4ddeb1db70d21f1a075f06006"
+  }
+]
