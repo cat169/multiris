@@ -1,0 +1,3 @@
+function channel=estimate_channel_parameters(varargin)
+channel=struct('xiEstimate',0,'zetaEstimate',0,'delayEstimate',0,'rhoEstimate',1);
+end

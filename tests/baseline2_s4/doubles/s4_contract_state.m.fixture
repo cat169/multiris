@@ -1,0 +1,6 @@
+function value=s4_contract_state(action,mode)
+persistent state
+if strcmp(action,'configure'),state=struct('mode',mode,'calls',0);end
+if strcmp(action,'next'),state.calls=state.calls+1;end
+value=state;
+end

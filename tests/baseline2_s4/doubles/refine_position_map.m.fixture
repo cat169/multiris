@@ -1,0 +1,14 @@
+function map=refine_position_map(~,~,prior,initial,varargin)
+s=s4_contract_state('next','');
+if strcmp(s.mode,'program'),error('s4Fixture:ProgramError','Unexpected program error.');end
+if strcmp(s.mode,'allfail')||(strcmp(s.mode,'partial')&&s.calls==2)|| ...
+        (strcmp(s.mode,'firstfail')&&s.calls==1)||(strcmp(s.mode,'swapfail')&&s.calls==2)
+    error('refine_position_map:PositionAtRisCenter','Known geometry-domain failure.');
+end
+if isempty(initial),initial=prior.mean;end
+if strcmp(s.mode,'swapfail')&&s.calls==1,initial=[prior.mean(4:6);prior.mean(1:3)];end
+r=chol(prior.covariance,'lower')\(initial-prior.mean);flag=1;
+if strcmp(s.mode,'nonconverged'),flag=0;end
+map=struct('positionEstimate',initial,'staticPositionEstimate',initial(1:3), ...
+    'mobilePositionEstimate',initial(4:6),'objective',.5*(r.'*r),'exitflag',flag,'iterations',1);
+end
